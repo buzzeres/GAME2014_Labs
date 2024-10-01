@@ -7,43 +7,36 @@ public class PlayerBehavior : MonoBehaviour
     [SerializeField]
     private float _speed;
     [SerializeField]
-    private Boundary _horizontalBoundary; // Correct spelling
+    private Boundary _horizontalBoundary;
     [SerializeField]
-    private Boundary _verticalBoundary;   // Correct spelling
+    private Boundary _verticalBoundary;
+    private bool isAlive = true; // Check if the player is alive
 
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
     void Update()
     {
-        // Gets input and calculates the movement
+        if (!isAlive) return; // If player is dead, stop updating
+
         float axisX = Input.GetAxisRaw("Horizontal") * _speed * Time.deltaTime;
         float axisY = Input.GetAxisRaw("Vertical") * _speed * Time.deltaTime;
 
         transform.position += new Vector3(axisX, axisY, 0);
 
-        // Check if player passes the boundary, if they do, switch side like pac-man
+        // Horizontal Boundary Check
         if (transform.position.x < _horizontalBoundary.min)
-        {
             transform.position = new Vector3(_horizontalBoundary.min, transform.position.y, 0);
-        }
         else if (transform.position.x > _horizontalBoundary.max)
-        {
             transform.position = new Vector3(_horizontalBoundary.max, transform.position.y, 0);
-        }
 
-        // Check if player passes the boundary, if they do, stop it on the edge
+        // Vertical Boundary Check
         if (transform.position.y < _verticalBoundary.min)
-        {
             transform.position = new Vector3(transform.position.x, _verticalBoundary.min, 0);
-        }
         else if (transform.position.y > _verticalBoundary.max)
-        {
             transform.position = new Vector3(transform.position.x, _verticalBoundary.max, 0);
-        }
+    }
+
+    public void PlayerDied()
+    {
+        Debug.Log("Player Died!");
+        isAlive = false;
     }
 }
