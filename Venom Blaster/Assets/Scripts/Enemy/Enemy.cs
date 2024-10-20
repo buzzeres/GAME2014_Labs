@@ -1,113 +1,122 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;  // For handling UI elements like Slider
 
-public class Enemy : MonoBehaviour
+public class Enemy : BaseCharacter
 {
-    public int maxHealth = 100;
-    private int currentHealth;
     public float moveSpeed = 3f;
+    public float desiredDistance = 2f;  // The distance the enemy will try to maintain from the player
     public GameObject projectilePrefab;
     public Transform firePoint;
-    public float fireRate = 2f;
+    public float fireRate = 1.5f;
     private float nextFireTime = 0f;
 
+    private Rigidbody2D rb;
     private Transform player;
-    public float stoppingDistance = 2f;
 
-    public EnemySpawner spawner;  // Reference to the spawner
-    public Slider healthSlider;   // Reference to the health slider UI
+    // Reference to the GameObject that should be destroyed or disabled when this enemy dies
+    public GameObject restrictedAreaObject;  // Assign this in the Unity Editor or dynamically
 
-    void Start()
+    protected override void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player").transform;
-        currentHealth = maxHealth;
+        base.Start();  // Calls the Start function from BaseCharacter to initialize health
+        rb = GetComponent<Rigidbody2D>();
 
-        // Set up the health slider
-        if (healthSlider != null)
+        // Try to find the player using the tag
+        player = GameObject.FindGameObjectWithTag("Player")?.transform;
+
+        if (player == null)
         {
-            healthSlider.maxValue = maxHealth;
-            healthSlider.value = currentHealth;
+            Debug.LogError("Player not found! Make sure the player is tagged as 'Player'.");
         }
     }
 
-    void Update()
+    private void Update()
     {
         if (player != null)
         {
-            MoveTowardsPlayer();
-            RotateTowardsPlayer();
-            ShootAtPlayer();
-        }
+            float distanceToPlayer = Vector2.Distance(transform.position, player.position);
 
-        // Update health slider UI as enemy takes damage
-        if (healthSlider != null)
-        {
-            healthSlider.value = currentHealth;
-        }
-    }
+            // Move only if the enemy is farther than the desired distance
+            if (distanceToPlayer > desiredDistance)
+            {
+                MoveTowardPlayer();
+            }
+            else
+            {
+                // Optionally face the player but don't move closer
+                FacePlayer();
+            }
 
-    private void MoveTowardsPlayer()
-    {
-        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
-        if (distanceToPlayer > stoppingDistance)
-        {
-            Vector2 direction = (player.position - transform.position).normalized;
-            transform.position = Vector2.MoveTowards(transform.position, player.position, moveSpeed * Time.deltaTime);
+            ShootAtPlayer();  // Continue shooting regardless of distance
         }
     }
 
-    private void RotateTowardsPlayer()
+    private void MoveTowardPlayer()
     {
         Vector2 direction = (player.position - transform.position).normalized;
-        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0f, 0f, angle - 90f);
+        rb.MovePosition((Vector2)transform.position + direction * moveSpeed * Time.deltaTime);
+    }
+
+    private void FacePlayer()
+    {
+        if (player != null)
+        {
+            Vector2 direction = player.position - transform.position;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            rb.rotation = angle;
+        }
     }
 
     private void ShootAtPlayer()
     {
-        if (Time.time >= nextFireTime && projectilePrefab != null)
+        if (Time.time >= nextFireTime && projectilePrefab != null && firePoint != null)
         {
-            Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
+            Vector2 direction = (player.position - firePoint.position).normalized;
+            GameObject projectile = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
+            Bullet bullet = projectile.GetComponent<Bullet>();
+            if (bullet != null)
+            {
+                bullet.Initialize(direction, "Player");  // Targeting the player
+            }
+
             nextFireTime = Time.time + fireRate;
         }
     }
 
-    public void TakeDamage(int damage)
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        currentHealth -= damage;
-
-        if (currentHealth <= 0)
+        if (collision.gameObject.CompareTag("Wall"))
         {
-            Die();
+            Debug.Log("Enemy collided with a wall.");
+            // Optionally, stop movement or reverse direction here
+        }
+        else
+        {
+            Debug.Log("Enemy collided with: " + collision.gameObject.name);
         }
     }
 
-    private void Die()
+    protected override void Die()
     {
-        Destroy(gameObject);  // Destroy the enemy game object
+        base.Die();
+        Debug.Log("Enemy has been killed.");
 
-        // Notify the spawner that this enemy has been killed
-        if (spawner != null)
+        // Check if the enemy is supposed to open the restricted area
+        if (restrictedAreaObject != null)
         {
-            spawner.EnemyKilled();
+            // Destroy the restricted area object (like a door or barrier) when the enemy dies
+            Destroy(restrictedAreaObject);
+            Debug.Log("Restricted area opened!");
         }
 
-        // Notify the player to increase the kill count
-        Player playerComponent = player.GetComponent<Player>();
-        if (playerComponent != null)
+        // Notify the player that an enemy has been killed
+        Player player = FindObjectOfType<Player>();
+        if (player != null)
         {
-            playerComponent.IncreaseKillCount();
+            Debug.Log("Enemy killed, notifying player.");
+            player.EnemyKilled();  // Increment the kill count in the player script
         }
-    }
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.CompareTag("PlayerProjectile"))
-        {
-            TakeDamage(100);  // Assume the player projectile deals 100 damage
-            Destroy(collision.gameObject);  // Destroy the projectile
-        }
+        // Destroy the enemy object after death
+        Destroy(gameObject);
     }
 }

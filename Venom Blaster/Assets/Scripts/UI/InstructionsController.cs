@@ -9,6 +9,6 @@ public class InstructionsController : MonoBehaviour
 
     public void BackToMenu()
     {
-        SceneManager.LoadScene("MainMenu");
+        SceneManager.LoadSceneAsync(1);
     }
 }
