@@ -12,7 +12,7 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Wall
   - Water
   - UI
   - 
@@ -47,4 +47,7 @@ TagManager:
     locked: 0
   - name: Bullet
     uniqueID: 1231345577
+    locked: 0
+  - name: Wall
+    uniqueID: 3469551683
     locked: 0

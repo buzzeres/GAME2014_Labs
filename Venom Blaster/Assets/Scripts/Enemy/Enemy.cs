@@ -4,16 +4,19 @@ public class Enemy : BaseCharacter
 {
     public float moveSpeed = 3f;
     public float desiredDistance = 2f;  // The distance the enemy will try to maintain from the player
+    public float shootingDistance = 5f;  // The distance within which the enemy will shoot at the player
     public GameObject projectilePrefab;
     public Transform firePoint;
-    public float fireRate = 1.5f;
+    public float fireRate = 4.5f;
     private float nextFireTime = 0f;
+    public bool isSpecialEnemy = false; // Mark if this is the enemy for the win condition
+    private bool canMove = false; // Enemy starts stationary until triggered
 
     private Rigidbody2D rb;
     private Transform player;
 
-    // Reference to the GameObject that should be destroyed or disabled when this enemy dies
-    public GameObject restrictedAreaObject;  // Assign this in the Unity Editor or dynamically
+    // Reference to the Trigger Area (you will drag and drop in the Unity editor)
+    public GameObject triggerZone; // Assign this trigger area via the editor
 
     protected override void Start()
     {
@@ -27,10 +30,26 @@ public class Enemy : BaseCharacter
         {
             Debug.LogError("Player not found! Make sure the player is tagged as 'Player'.");
         }
+
+        // If the trigger zone exists, ensure it has a TriggerZone script attached
+        if (triggerZone != null)
+        {
+            TriggerZone trigger = triggerZone.GetComponent<TriggerZone>();
+            if (trigger != null)
+            {
+                trigger.AssignEnemy(this); // Link the trigger zone to this specific enemy
+            }
+            else
+            {
+                Debug.LogError("TriggerZone component not found on the trigger zone object.");
+            }
+        }
     }
 
     private void Update()
     {
+        if (!canMove) return;  // Exit update if the enemy can't move yet
+
         if (player != null)
         {
             float distanceToPlayer = Vector2.Distance(transform.position, player.position);
@@ -42,11 +61,15 @@ public class Enemy : BaseCharacter
             }
             else
             {
-                // Optionally face the player but don't move closer
+                // Face the player but don't move closer
                 FacePlayer();
             }
 
-            ShootAtPlayer();  // Continue shooting regardless of distance
+            // Only shoot if the player is within the shooting distance
+            if (distanceToPlayer <= shootingDistance)
+            {
+                ShootAtPlayer();
+            }
         }
     }
 
@@ -56,13 +79,17 @@ public class Enemy : BaseCharacter
         rb.MovePosition((Vector2)transform.position + direction * moveSpeed * Time.deltaTime);
     }
 
+    // Face the player before shooting or moving, and rotate the firePoint with the enemy
     private void FacePlayer()
     {
         if (player != null)
         {
             Vector2 direction = player.position - transform.position;
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            rb.rotation = angle;
+            rb.rotation = angle;  // Rotate the enemy to face the player
+
+            // Rotate the firePoint to match the enemy's rotation
+            firePoint.rotation = Quaternion.Euler(new Vector3(0f, 0f, angle));
         }
     }
 
@@ -87,7 +114,8 @@ public class Enemy : BaseCharacter
         if (collision.gameObject.CompareTag("Wall"))
         {
             Debug.Log("Enemy collided with a wall.");
-            // Optionally, stop movement or reverse direction here
+            // Stop the enemy when it collides with a wall
+            rb.velocity = Vector2.zero;
         }
         else
         {
@@ -98,25 +126,29 @@ public class Enemy : BaseCharacter
     protected override void Die()
     {
         base.Die();
-        Debug.Log("Enemy has been killed.");
-
-        // Check if the enemy is supposed to open the restricted area
-        if (restrictedAreaObject != null)
+        if (isSpecialEnemy)
         {
-            // Destroy the restricted area object (like a door or barrier) when the enemy dies
-            Destroy(restrictedAreaObject);
-            Debug.Log("Restricted area opened!");
+            // Call the GameOverManager's Win function when the special enemy dies
+            GameOverManager gameOverManager = FindObjectOfType<GameOverManager>();
+            if (gameOverManager != null)
+            {
+                gameOverManager.TriggerWinCondition();
+            }
         }
 
-        // Notify the player that an enemy has been killed
+        // Notify the player for regular enemies
         Player player = FindObjectOfType<Player>();
         if (player != null)
         {
-            Debug.Log("Enemy killed, notifying player.");
-            player.EnemyKilled();  // Increment the kill count in the player script
+            player.EnemyKilled();
         }
 
-        // Destroy the enemy object after death
         Destroy(gameObject);
+    }
+
+    // Method to start moving the enemy when the trigger is activated
+    public void ActivateEnemyMovement()
+    {
+        canMove = true;
     }
 }

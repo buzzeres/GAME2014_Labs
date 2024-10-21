@@ -20,11 +20,13 @@ public class Player : BaseCharacter
     public TextMeshProUGUI enemyKillText;  // TextMeshPro component to display enemy kills
 
     private int enemyKillCount = 0;      // To track the number of enemies killed
-    private float elapsedTime = 0f;      // To track elapsed time
+    private float elapsedTime = 0f;
 
     private bool isShootButtonPressed = false;
 
     public GameOverManager gameOverManager;  // Reference to the Game Over manager
+    public AudioClip shootAudioClip;     // Reference to the AudioClip for the shooting sound
+    private AudioSource audioSource;     // AudioSource to play the AudioClip
 
     protected override void Start()
     {
@@ -32,6 +34,13 @@ public class Player : BaseCharacter
         currentHealth = 100;  // Ensure player starts with 100 health
         healthSystem.UpdateHealthUI();  // Make sure the health bar starts full
         rb = GetComponent<Rigidbody2D>();
+
+        // Initialize the AudioSource component
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>(); // Add AudioSource if missing
+        }
 
         // Initialize the cooldown slider
         if (cooldownSlider != null)
@@ -54,13 +63,6 @@ public class Player : BaseCharacter
         elapsedTime += Time.deltaTime;
         UpdateTimeText();
 
-        // Test health bar by pressing "H" to decrease player's health by 10
-        if (Input.GetKeyDown(KeyCode.H))
-        {
-            Debug.Log("pressed");
-            healthSystem.TakeDamage(10);  // Take 10 damage to test health bar
-        }
-
         // Update the cooldown slider
         UpdateCooldownSlider();
     }
@@ -80,20 +82,6 @@ public class Player : BaseCharacter
         {
             float angle = Mathf.Atan2(movement.y, movement.x) * Mathf.Rad2Deg;
             transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, angle - 90f));
-        }
-    }
-
-    // Detect collision with walls or other objects
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        // Check if the collided object has the "Wall" tag
-        if (collision.gameObject.CompareTag("Wall"))
-        {
-            Debug.Log("Player collided with a wall: " + collision.gameObject.name);
-        }
-        else
-        {
-            Debug.Log("Player collided with: " + collision.gameObject.name);
         }
     }
 
@@ -121,6 +109,12 @@ public class Player : BaseCharacter
     {
         if (projectilePrefab != null && firePoint != null)
         {
+            // Play the shooting sound
+            if (shootAudioClip != null)
+            {
+                audioSource.PlayOneShot(shootAudioClip);
+            }
+
             GameObject projectile = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
             Bullet bullet = projectile.GetComponent<Bullet>();
             if (bullet != null)
@@ -134,30 +128,27 @@ public class Player : BaseCharacter
     {
         if (cooldownSlider != null)
         {
-            // Calculate remaining cooldown time
             float remainingCooldown = nextFireTime - Time.time;
 
             if (remainingCooldown > 0)
             {
-                cooldownSlider.value = remainingCooldown;  // Update slider to show the remaining cooldown
+                cooldownSlider.value = remainingCooldown;
             }
             else
             {
-                cooldownSlider.value = 0;  // Reset slider when cooldown is complete
+                cooldownSlider.value = 0;
             }
         }
     }
 
-    // Update the time text to display elapsed time
     private void UpdateTimeText()
     {
         if (timeText != null)
         {
-            timeText.text = $"Time: {elapsedTime:F2}";  // Display time in seconds
+            timeText.text = $"Time: {elapsedTime:F2}";
         }
     }
 
-    // Update the enemy kill count text
     private void UpdateEnemyKillText()
     {
         if (enemyKillText != null)
@@ -166,17 +157,10 @@ public class Player : BaseCharacter
         }
     }
 
-    // Increment the enemy kill count when an enemy is killed
     public void EnemyKilled()
     {
-        IncrementEnemyKillCount();  // Increase the kill count
-    }
-
-    // Call this method to increment the enemy kill count and update the UI
-    private void IncrementEnemyKillCount()
-    {
         enemyKillCount++;
-        UpdateEnemyKillText();  // Update the enemy kill count text
+        UpdateEnemyKillText();
     }
 
     protected override void Die()
@@ -184,28 +168,7 @@ public class Player : BaseCharacter
         base.Die();
         if (gameOverManager != null)
         {
-            gameOverManager.TriggerGameOver();  // Trigger game over in the manager
-        }
-        Debug.Log("Player has died. Game over.");
-
-        // Notify the camera that the player is dead
-        CameraController cameraController = FindObjectOfType<CameraController>();
-        if (cameraController != null)
-        {
-            cameraController.SetPlayerDead();
-        }
-
-        // Notify other camera controllers if needed
-        CameraControllerJoystick cameraControllerJoystick = FindObjectOfType<CameraControllerJoystick>();
-        if (cameraControllerJoystick != null)
-        {
-            cameraControllerJoystick.SetPlayerDead();
-        }
-
-        CameraFollow cameraFollow = FindObjectOfType<CameraFollow>();
-        if (cameraFollow != null)
-        {
-            cameraFollow.SetPlayerDead();
+            gameOverManager.TriggerGameOver();
         }
     }
 }

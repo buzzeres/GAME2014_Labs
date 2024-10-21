@@ -46,20 +46,38 @@ public class CollisionController : MonoBehaviour
     {
         Debug.Log(gameObject.name + " collided with a wall: " + collision.gameObject.name);
         // Add additional behavior for wall collisions, like stopping movement or playing sound
+
+        // Example: If the enemy collides with a wall, stop its movement
+        if (enemyComponent != null)
+        {
+            Rigidbody2D enemyRb = enemyComponent.GetComponent<Rigidbody2D>();
+            if (enemyRb != null)
+            {
+                enemyRb.velocity = Vector2.zero; // Stop the enemy's movement on collision with the wall
+            }
+        }
     }
 
     // Handle collision between Player and Enemy
     private void HandlePlayerCollisionWithEnemy(Collision2D collision)
     {
         Debug.Log("Player collided with an enemy: " + collision.gameObject.name);
-        // Implement behavior for when the player collides with an enemy (e.g., take damage)
+        // Example: Deal damage to the player if an enemy collides with them
+        if (playerComponent != null && collision.gameObject.TryGetComponent(out Enemy enemy))
+        {
+            playerComponent.TakeDamage(10);  // Adjust the damage as needed
+        }
     }
 
     // Handle collision between Enemy and Player
     private void HandleEnemyCollisionWithPlayer(Collision2D collision)
     {
         Debug.Log("Enemy collided with the player: " + collision.gameObject.name);
-        // Implement behavior for when the enemy collides with the player (e.g., deal damage to the player)
+        // Example: Deal damage to the player if an enemy collides with them
+        if (enemyComponent != null && collision.gameObject.TryGetComponent(out Player player))
+        {
+            player.TakeDamage(10);  // Adjust the damage as needed
+        }
     }
 
     // Default handler for other collisions
