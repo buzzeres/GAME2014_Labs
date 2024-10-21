@@ -240,7 +240,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   backButton: {fileID: 1484795340}
   audioSource: {fileID: 0}
-  backButtonClip: {fileID: 0}
+  backButtonClip: {fileID: 8300000, guid: 6085f57f02aca1e4487562b561b31b3f, type: 3}
 --- !u!1 &378030865
 GameObject:
   m_ObjectHideFlags: 0

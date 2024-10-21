@@ -12,7 +12,10 @@ public class InstructionsController : MonoBehaviour
 
     public void BackToMenu()
     {
-        audioSource.PlayOneShot(backButtonClip);  // Play the sound effect
+        if (audioSource != null && backButtonClip != null)
+        {
+            audioSource.PlayOneShot(backButtonClip);  // Play the sound effect
+        }
         SceneManager.LoadScene("MainMenu");
     }
 
