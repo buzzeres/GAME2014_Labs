@@ -4,7 +4,7 @@
 PlayerSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 26
-  productGUID: 59eb8182ca340e946aa8bae7472b6f38
+  productGUID: c2d77dc012938084c80c974b59dc3ca9
   AndroidProfiler: 0
   AndroidFilterTouchesWhenObscured: 0
   AndroidEnableSustainedPerformanceMode: 0
@@ -804,10 +804,10 @@ PlayerSettings:
   apiCompatibilityLevel: 6
   activeInputHandler: 0
   windowsGamepadBackendHint: 0
-  cloudProjectId: ea1c50f2-446c-43d5-b528-3bbf36fecdd7
+  cloudProjectId: 6e301191-0a90-4b3d-8395-90c6d0929432
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Venom Blaster 2024-10-16_12-14-19
+  projectName: Venom Blaster 2024-10-16_17-11-47
   organizationId: buzzeres
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0

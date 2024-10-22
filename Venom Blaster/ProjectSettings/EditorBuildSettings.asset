@@ -6,6 +6,15 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 2cda990e2423bbf4892e6590ba056729
-  m_configObjects: {}
+    path: Assets/Scenes/MainMenu.unity
+    guid: 2e9e3ce11dc4a64469d220e672d75760
+  - enabled: 1
+    path: Assets/Scenes/Gameplay.unity
+    guid: ad115aee6858d9d43822f31ee5b8761d
+  - enabled: 1
+    path: Assets/Scenes/Instructions.unity
+    guid: e7f9e3819e2272d448571460cb607fa1
+  m_configObjects:
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 420b6986d2e2cef4f97c7ef9f1218296, type: 2}
+    com.unity.adaptiveperformance.samsung.android.provider_settings: {fileID: 11400000, guid: 0cca690168aec374e93179ddebe18f78, type: 2}
+    com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 73e7da7fc0406654d8dd2cd6729034fd, type: 2}
