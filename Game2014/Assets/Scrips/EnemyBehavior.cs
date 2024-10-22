@@ -19,12 +19,10 @@ public class EnemyBehavior : MonoBehaviour
     private Boundary _verticalBoundary;
 
     private bool _movingRight = true;
-    private GameManager gameManager;
     private BulletManager _bulletManager;
 
     void Start()
     {
-        gameManager = FindObjectOfType<GameManager>();
         _bulletManager = BulletManager.Instance; // Accessing the BulletManager Singleton
 
         SetRandomProperties();
@@ -63,7 +61,6 @@ public class EnemyBehavior : MonoBehaviour
         }
     }
 
-
     IEnumerator ShootingRoutine()
     {
         while (true)
@@ -78,15 +75,6 @@ public class EnemyBehavior : MonoBehaviour
     {
         _horizontalBoundary = horizontal;
         _verticalBoundary = vertical;
-    }
-
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        // If the enemy collides with the player, destroy the enemy and update the score
-        if (other.CompareTag("Player"))
-        {
-            gameManager.EnemyDestroyed(gameObject);
-        }
     }
 
     void Respawn()

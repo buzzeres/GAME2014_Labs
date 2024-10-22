@@ -6,25 +6,54 @@ public class BulletBehavior : MonoBehaviour
 {
     [SerializeField]
     private float _speed = 5f;
+    private BulletType _bulletType;
+    private BulletManager _bulletManager;
+
+    // Screen boundaries
+    private float _screenTop;
+    private float _screenBottom;
+    private float _screenLeft;
+    private float _screenRight;
+
+    private void Start()
+    {
+        _bulletManager = BulletManager.Instance; // Access the singleton instance
+
+        // Calculate screen boundaries based on the camera's view
+        Vector3 screenBounds = Camera.main.ScreenToWorldPoint
+            (new Vector3(Screen.width, Screen.height, 0));
+        _screenTop = screenBounds.y;
+        _screenBottom = -screenBounds.y;
+        _screenLeft = -screenBounds.x;
+        _screenRight = screenBounds.x;
+    }
 
     private void Update()
     {
         // Move the bullet
         transform.position += transform.up * _speed * Time.deltaTime;
 
-        // If bullet goes out of screen bounds, return it to the pool
-        if (transform.position.y > 10 || transform.position.y < -10)
+        // Check if bullet is out of screen bounds
+        if (transform.position.y > _screenTop || transform.position.y < _screenBottom ||
+            transform.position.x > _screenRight || transform.position.x < _screenLeft)
         {
-            BulletManager.Instance.ReturnBullet(this.gameObject);
+            _bulletManager.ReturnBullet(this.gameObject); // Return bullet to the pool
         }
+    }
+
+    public void Initialize(BulletType bulletType, Vector3 position, Vector3 direction)
+    {
+        _bulletType = bulletType;
+        transform.position = position;
+        transform.up = direction; // Set the bullet's direction
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag("Enemy"))
+        if (_bulletType == BulletType.PLAYER && collision.CompareTag("Enemy"))
         {
-            Destroy(collision.gameObject); // Destroy enemy
-            BulletManager.Instance.ReturnBullet(this.gameObject); // Return bullet to pool
+            GameManager.Instance.EnemyDestroyed(collision.gameObject);  // Update score in GameManager
+            _bulletManager.ReturnBullet(this.gameObject);  // Return bullet to the pool
         }
     }
 }

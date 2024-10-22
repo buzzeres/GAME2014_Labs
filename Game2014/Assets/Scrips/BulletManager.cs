@@ -47,32 +47,40 @@ public class BulletManager : MonoBehaviour
         }
     }
 
-    // Updated GetBullet() method to take bullet type, position, and direction
+    // Updated Bullet to take bullet type, position, and direction
     public GameObject GetBullet(BulletType bulletType, Vector3 position, Vector3 direction)
     {
+        // Use the corresponding bullet pool (Player or Enemy)
         List<GameObject> bulletPool = bulletType == BulletType.PLAYER ? _playerBulletPool : _enemyBulletPool;
 
+        // Check for an inactive bullet in the pool
         foreach (var bullet in bulletPool)
         {
             if (!bullet.activeInHierarchy)
             {
+                // Reuse this bullet: activate it, set position and direction
                 bullet.SetActive(true);
                 bullet.transform.position = position;
-                bullet.transform.up = direction; // Set the bullet's direction
-                return bullet;
+                bullet.transform.up = direction;
+                return bullet;  // Return the reused bullet
             }
         }
 
-        // If no bullets are available, instantiate a new one (optional)
+        // If no inactive bullets are found, instantiate a new one
         GameObject newBullet = bulletType == BulletType.PLAYER
             ? Instantiate(_playerBulletPrefab)
             : Instantiate(_enemyBulletPrefab);
 
+        // Set its position and direction
         newBullet.transform.position = position;
         newBullet.transform.up = direction;
+
+        // Add the new bullet to the pool for future reuse
         bulletPool.Add(newBullet);
-        return newBullet;
+
+        return newBullet;  // Return the newly created bullet
     }
+
 
     public void ReturnBullet(GameObject bullet)
     {

@@ -59,9 +59,40 @@ public class PlayerBehavior : MonoBehaviour
         }
     }
 
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        // Debug log to check what collided
+        Debug.Log("Trigger entered with: " + collision.gameObject.name);
+
+        if (collision.gameObject.CompareTag("EnemyBullet"))
+        {
+            Debug.Log("Enemy bullet hit the player");
+
+            if (GameManager.Instance == null)
+            {
+                Debug.LogError("GameManager instance is NULL!");
+            }
+            else
+            {
+                Debug.Log("Calling PlayerHit method...");
+                GameManager.Instance.PlayerHit(1);  // Call PlayerHit with damage 1
+            }
+
+            BulletManager.Instance.ReturnBullet(collision.gameObject);
+
+            if (GameManager.Instance.playerHealth <= 0)
+            {
+                PlayerDied();
+            }
+        }
+
+    }
+
+
     public void PlayerDied()
     {
         _isAlive = false;
         Debug.Log("Player Died!");
+        GameManager.Instance.GameOver();  // Call GameOver when player dies
     }
 }
