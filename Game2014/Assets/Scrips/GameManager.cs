@@ -8,8 +8,8 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;  // Make GameManager singleton
 
     [Header("Player & Score Settings")]
-    public TextMeshProUGUI scoreText;
-    public TextMeshProUGUI healthText;  // Add healthText field
+    public TextMeshPro scoreText;
+    public TextMeshPro healthText;  // Add healthText field
 
     public int playerScore = 0;
 
