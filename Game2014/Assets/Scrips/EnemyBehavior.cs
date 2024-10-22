@@ -5,25 +5,30 @@ using UnityEngine;
 public class EnemyBehavior : MonoBehaviour
 {
     [SerializeField]
-    private float _speed = 2.0f;       
+    private float _speed = 2.0f;
     [SerializeField]
-    private float _horizontalSpeed = 1.0f; 
+    private float _horizontalSpeed = 1.0f;
 
-    private Boundary _horizontalBoundary; 
-    private Boundary _verticalBoundary;   
+    [SerializeField]
+    private Transform _shootingPoint; // Position from where the enemy shoots
 
-    private bool _movingRight = true; 
+    [SerializeField]
+    private float _shootingCooldownTime = 1.5f; // Time between shots
 
-    private GameManager gameManager; 
+    private Boundary _horizontalBoundary;
+    private Boundary _verticalBoundary;
+
+    private bool _movingRight = true;
+    private BulletManager _bulletManager;
 
     void Start()
     {
-        // Get a reference to the GameManager in the scene
-        gameManager = FindObjectOfType<GameManager>();
+        _bulletManager = BulletManager.Instance; // Accessing the BulletManager Singleton
 
-        // Set initial position to a random horizontal point at the top of the screen
         SetRandomProperties();
         transform.position = new Vector3(Random.Range(_horizontalBoundary.min, _horizontalBoundary.max), _verticalBoundary.max, 0);
+
+        StartCoroutine(ShootingRoutine()); // Start shooting
     }
 
     void Update()
@@ -31,11 +36,10 @@ public class EnemyBehavior : MonoBehaviour
         // Move the enemy down
         transform.position += Vector3.down * _speed * Time.deltaTime;
 
-       
+        // Horizontal movement
         if (_movingRight)
         {
             transform.position += Vector3.right * _horizontalSpeed * Time.deltaTime;
-
             if (transform.position.x > _horizontalBoundary.max)
             {
                 _movingRight = false;
@@ -44,17 +48,26 @@ public class EnemyBehavior : MonoBehaviour
         else
         {
             transform.position += Vector3.left * _horizontalSpeed * Time.deltaTime;
-
             if (transform.position.x < _horizontalBoundary.min)
             {
                 _movingRight = true;
             }
         }
 
-        // If the enemy moves past the bottom vertical boundary, notify the GameManager and respawn this enemy with new properties
+        // Respawn if the enemy moves past the bottom vertical boundary
         if (transform.position.y < _verticalBoundary.min)
         {
             Respawn();
+        }
+    }
+
+    IEnumerator ShootingRoutine()
+    {
+        while (true)
+        {
+            // Get and fire an enemy bullet
+            GameObject bullet = _bulletManager.GetBullet(BulletType.ENEMY, _shootingPoint.position, Vector3.down);
+            yield return new WaitForSeconds(_shootingCooldownTime); // Wait for the cooldown before shooting again
         }
     }
 
@@ -64,28 +77,14 @@ public class EnemyBehavior : MonoBehaviour
         _verticalBoundary = vertical;
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        // If the enemy collides with the player, destroy the enemy and update the score
-        if (other.CompareTag("Player"))
-        {
-            gameManager.EnemyDestroyed(gameObject);
-        }
-    }
-
-    
     void Respawn()
     {
         SetRandomProperties();
-
         transform.position = new Vector3(Random.Range(_horizontalBoundary.min, _horizontalBoundary.max), _verticalBoundary.max, 0);
     }
 
     private void SetRandomProperties()
     {
-    //    float randomSize = Random.Range(1.0f, 1.5f);
-    //    transform.localScale = new Vector3(randomSize, randomSize, 1);
-
         Color randomColor = new Color(Random.value, Random.value, Random.value);
         GetComponent<SpriteRenderer>().color = randomColor;
 
