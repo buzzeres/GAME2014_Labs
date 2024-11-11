@@ -4,19 +4,16 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Enemy
-  - PlayerBullet
-  - 'EnemyBullet '
-  - EnemyBullet
+  - Ground
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Ground
   - Water
   - UI
-  - 
-  - 
+  - Ground
+  - Prob
   - 
   - 
   - 
@@ -45,9 +42,12 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Player
-    uniqueID: 3917131679
+  - name: Background
+    uniqueID: 1392141181
     locked: 0
-  - name: BackGround
-    uniqueID: 2148689395
+  - name: Foreground
+    uniqueID: 1440935539
+    locked: 0
+  - name: FrontDetails
+    uniqueID: 3898286289
     locked: 0
