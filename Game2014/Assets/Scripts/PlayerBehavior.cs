@@ -21,6 +21,11 @@ public class PlayerBehavior : MonoBehaviour
     [Range(0.0f, 10.0f)]
     float _airFactor;
 
+    Joystick _leftJoystick;
+    [SerializeField]
+    [Range(0.0f, 1.0f)]
+    float _leftJoystickVerticalTreshold;
+
     [SerializeField]
     private float _horizontalSpeedLimit = 5.0f;
 
@@ -28,6 +33,11 @@ public class PlayerBehavior : MonoBehaviour
     void Start()
     {
         _rigidbody = GetComponent<Rigidbody2D>();
+
+        if (GameObject.Find("OnScreenControllers"))
+        {
+            _leftJoystick = GameObject.Find("LeftJoystick").GetComponent<Joystick>();
+        }
 
         // Check if _groundPoint is assigned
         if (_groundPoint == null)
@@ -51,6 +61,13 @@ public class PlayerBehavior : MonoBehaviour
     void Move()
     {
         float xInput = Input.GetAxisRaw("Horizontal");
+
+        if (_leftJoystick)
+        {
+            xInput = _leftJoystick.Horizontal;
+            Debug.Log(_leftJoystick.Horizontal + " " + _leftJoystick.Vertical);
+        }
+
         if (xInput != 0.0f)
         {
             Vector2 force = Vector2.right * xInput * _horizontalForce;
@@ -60,19 +77,29 @@ public class PlayerBehavior : MonoBehaviour
             }
 
             _rigidbody.AddForce(force);
+            GetComponent<SpriteRenderer>().flipX = (force.x <= 0.0f);
+
             if (Mathf.Abs(_rigidbody.velocity.x) > _horizontalSpeedLimit)
             {
                 float updatedXvalue = Mathf.Clamp(_rigidbody.velocity.x, -_horizontalSpeedLimit, _horizontalSpeedLimit);
                 _rigidbody.velocity = new Vector2(updatedXvalue, _rigidbody.velocity.y);
             }
+
+
+
+
         }
     }
 
     void jump()
     {
         var jumpPressed = Input.GetAxisRaw("Jump");
+        if(_leftJoystick)
+        {
+            jumpPressed = _leftJoystick.Vertical;
+        }
 
-        if (_isGrounded && jumpPressed != 0.0f)
+        if (_isGrounded && jumpPressed > _leftJoystickVerticalTreshold)
         {
             _rigidbody.AddForce(Vector2.up * _verticalForce);
         }
