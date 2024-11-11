@@ -17,22 +17,28 @@ public class PlayerBehavior : MonoBehaviour
     [SerializeField]
     private LayerMask _groundLayerMask;
 
+    private Animator _animator; // Changed from Animation to Animator
+
     [SerializeField]
     [Range(0.0f, 10.0f)]
-    float _airFactor;
+    private float _airFactor;
 
-    Joystick _leftJoystick;
+    private Joystick _leftJoystick;
     [SerializeField]
     [Range(0.0f, 1.0f)]
-    float _leftJoystickVerticalTreshold;
+    private float _leftJoystickVerticalThreshold;
 
     [SerializeField]
     private float _horizontalSpeedLimit = 5.0f;
+
+    [SerializeField]
+    float _deathlyFallSpeed = 5;
 
     // Start is called before the first frame update
     void Start()
     {
         _rigidbody = GetComponent<Rigidbody2D>();
+        _animator = GetComponent<Animator>(); // Changed from Animation to Animator
 
         if (GameObject.Find("OnScreenControllers"))
         {
@@ -46,6 +52,38 @@ public class PlayerBehavior : MonoBehaviour
         }
     }
 
+    void AnimatorStateControl()
+    {
+        if (_isGrounded)
+        {
+            if (Mathf.Abs(_rigidbody.velocity.x) > 0.2f)
+            {
+                _animator.SetInteger("State", (int)AnimationStates.Run);
+                Debug.Log("State: Run");
+            }
+            else
+            {
+                _animator.SetInteger("State", (int)AnimationStates.Idle);
+                Debug.Log("State: Idle");
+            }
+        }
+        else
+        {
+            if (Mathf.Abs(_rigidbody.velocity.y) > _deathlyFallSpeed)
+            {
+                _animator.SetInteger("State", (int)AnimationStates.Fall);
+                Debug.Log("State: Fall");
+            }
+            else
+            {
+                _animator.SetInteger("State", (int)AnimationStates.Jump);
+                Debug.Log("State: Jump");
+            }
+        }
+    }
+
+
+
     // Update is called once per frame
     void FixedUpdate()
     {
@@ -55,14 +93,15 @@ public class PlayerBehavior : MonoBehaviour
             _isGrounded = Physics2D.OverlapCircle(_groundPoint.position, _groundRadius, _groundLayerMask);
         }
         Move();
-        jump();
+        Jump();
+        AnimatorStateControl();
     }
 
     void Move()
     {
         float xInput = Input.GetAxisRaw("Horizontal");
 
-        if (_leftJoystick)
+        if (_leftJoystick != null)
         {
             xInput = _leftJoystick.Horizontal;
             Debug.Log(_leftJoystick.Horizontal + " " + _leftJoystick.Vertical);
@@ -73,7 +112,7 @@ public class PlayerBehavior : MonoBehaviour
             Vector2 force = Vector2.right * xInput * _horizontalForce;
             if (!_isGrounded)
             {
-                force *= _airFactor;
+                force = new Vector2(force.x * _airFactor, force.y);
             }
 
             _rigidbody.AddForce(force);
@@ -84,24 +123,20 @@ public class PlayerBehavior : MonoBehaviour
                 float updatedXvalue = Mathf.Clamp(_rigidbody.velocity.x, -_horizontalSpeedLimit, _horizontalSpeedLimit);
                 _rigidbody.velocity = new Vector2(updatedXvalue, _rigidbody.velocity.y);
             }
-
-
-
-
         }
     }
 
-    void jump()
+    void Jump()
     {
-        var jumpPressed = Input.GetAxisRaw("Jump");
-        if(_leftJoystick)
+        float jumpPressed = Input.GetAxisRaw("Jump");
+        if (_leftJoystick != null)
         {
             jumpPressed = _leftJoystick.Vertical;
         }
 
-        if (_isGrounded && jumpPressed > _leftJoystickVerticalTreshold)
+        if (_isGrounded && jumpPressed > _leftJoystickVerticalThreshold)
         {
-            _rigidbody.AddForce(Vector2.up * _verticalForce);
+            _rigidbody.AddForce(Vector2.up * _verticalForce, ForceMode2D.Impulse);
         }
     }
 
