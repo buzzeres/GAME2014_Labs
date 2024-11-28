@@ -56,7 +56,7 @@ public class PlayerBehavior : MonoBehaviour
     {
         if (_isGrounded)
         {
-            if (Mathf.Abs(_rigidbody.velocity.x) > 0.2f)
+            if (Mathf.Abs(_rigidbody.velocity.x) > 0.1f)
             {
                 _animator.SetInteger("State", (int)AnimationStates.Run);
                 Debug.Log("State: Run");
