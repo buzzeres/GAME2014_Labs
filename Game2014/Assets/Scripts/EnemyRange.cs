@@ -34,6 +34,13 @@ public class EnemyRange : MonoBehaviour
 
     public void Execute()
     {
-        GameObject bullet = Instantiate(_bullet, transform.position, Quaternion.identity);
+        if (_bullet != null)
+        {
+            GameObject bullet = Instantiate(_bullet, transform.position, Quaternion.identity);
+        }
+        else
+        {
+            Debug.LogError("Bullet prefab is not assigned");
+        }
     }
 }

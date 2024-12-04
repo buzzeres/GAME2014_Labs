@@ -1,8 +1,6 @@
 using UnityEngine;
 
-using static UnityEngine.RuleTile.TilingRuleOutput;
-
-public class EnemyBehavior : MonoBehaviour
+public class EnemyBehavior : MonoBehaviour, IDamage
 {
     [SerializeField]
     float _speed = 5;
@@ -19,6 +17,9 @@ public class EnemyBehavior : MonoBehaviour
     [SerializeField]
     LayerMask _layerMask;
 
+    [SerializeField]
+    private int _damage;
+
     PlayerDetection _playerDetector;
 
     Animator _animator;
@@ -30,7 +31,7 @@ public class EnemyBehavior : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        _playerDetector = GetComponent<PlayerDetection>();
+        _playerDetector = GetComponentInChildren<PlayerDetection>();
         _animator = GetComponent<Animator>();
     }
 
@@ -60,6 +61,11 @@ public class EnemyBehavior : MonoBehaviour
     void ChangeDirection()
     {
         transform.localScale = new Vector3(transform.localScale.x * -1, 1, 1);
+    }
+
+    public int Damage()
+    {
+        return _damage;
     }
 
     private void OnDrawGizmos()

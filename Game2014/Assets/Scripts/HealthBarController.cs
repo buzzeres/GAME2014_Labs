@@ -9,13 +9,14 @@ public class HealthBarController : MonoBehaviour
     [SerializeField]
     int _maxHealth;
 
+    [SerializeField]
     Slider _slider;
 
     bool _gameOverCondition;
 
     void Start()
     {
-        _slider = GetComponent<Slider>();
+        _slider = GetComponentInChildren<Slider>();
         _slider.maxValue = _maxHealth;
         _slider.value = _maxHealth;
     }
@@ -26,20 +27,21 @@ public class HealthBarController : MonoBehaviour
         _slider.value = _maxHealth;
     }
 
-
-    public void TakeDamge(int Damage)
+    public void TakeDamage(int damage)
     {
-        _slider.value -= Damage;
+        _slider.value -= damage;
 
         if (_slider.value <= 0)
         {
-           
-            if (_gameOverCondition == true)
+            _slider.value = 0;
+            if (_gameOverCondition)
             {
-                // Game Over
+                // Handle game over logic here
+                Debug.Log("Game Over");
             }
         }
     }
+
 
     public void HealHealth(int healAmount)
     {

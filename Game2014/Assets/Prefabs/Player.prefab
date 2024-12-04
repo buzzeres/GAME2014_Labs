@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4417192853973608315}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: 'GroundingPoint '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -45,7 +45,7 @@ GameObject:
   - component: {fileID: 387914589481697980}
   - component: {fileID: 4231524595115313515}
   - component: {fileID: 786200102832340304}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -61,7 +61,7 @@ Transform:
   m_GameObject: {fileID: 5483813505144525431}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.14, y: 3.685, z: 0}
+  m_LocalPosition: {x: 12.4, y: 5.08, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -200,7 +200,7 @@ MonoBehaviour:
   _groundRadius: 0.2
   _groundLayerMask:
     serializedVersion: 2
-    m_Bits: 136
+    m_Bits: 448
   _airFactor: 5
   _leftJoystickVerticalThreshold: 0
   _horizontalSpeedLimit: 3
