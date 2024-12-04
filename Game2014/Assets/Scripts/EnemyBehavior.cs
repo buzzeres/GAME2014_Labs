@@ -9,41 +9,51 @@ public class EnemyBehavior : MonoBehaviour
 
     [SerializeField]
     UnityEngine.Transform _baseCenterPoint;
-    bool _IsGrounded;
+    bool _isGrounded;
     [SerializeField]
     float _groundCheckDistance;
     [SerializeField]
     UnityEngine.Transform _frontGroundPoint;
-    bool _IsThereAnyFrontStep;
+    bool _isThereAnyFrontStep;
 
     [SerializeField]
     LayerMask _layerMask;
 
+    PlayerDetection _playerDetector;
+
+    Animator _animator;
+
     [SerializeField]
     UnityEngine.Transform _frontObstaclePoint;
-    bool IsThereAnyFrontObstacle;
+    bool _isThereAnyFrontObstacle;
 
     // Start is called before the first frame update
     void Start()
     {
+        _playerDetector = GetComponent<PlayerDetection>();
+        _animator = GetComponent<Animator>();
     }
 
     private void FixedUpdate()
     {
-        _IsGrounded = Physics2D.Linecast(_baseCenterPoint.position, _baseCenterPoint.position + Vector3.down * _groundCheckDistance, _layerMask);
-        _IsThereAnyFrontStep = Physics2D.Linecast(_baseCenterPoint.position, _frontGroundPoint.position, _layerMask);
-        IsThereAnyFrontObstacle = Physics2D.Linecast(_baseCenterPoint.position, _frontObstaclePoint.position, _layerMask);
+        _isGrounded = Physics2D.Linecast(_baseCenterPoint.position, _baseCenterPoint.position + Vector3.down * _groundCheckDistance, _layerMask);
+        _isThereAnyFrontStep = Physics2D.Linecast(_baseCenterPoint.position, _frontGroundPoint.position, _layerMask);
+        _isThereAnyFrontObstacle = Physics2D.Linecast(_baseCenterPoint.position, _frontObstaclePoint.position, _layerMask);
 
-
-
-        if (_IsGrounded && !_IsThereAnyFrontStep || IsThereAnyFrontObstacle)
+        if (_isGrounded && (!_isThereAnyFrontStep || _isThereAnyFrontObstacle))
+        {
             ChangeDirection();
-        if (_IsGrounded)
+        }
+        _animator.SetInteger("State", (int)AnimationStates.Idle);
+        if (_isGrounded && !_playerDetector.GetLOSStatus())
+        {
             Move();
+        }
     }
 
     void Move()
     {
+        _animator.SetInteger("State", (int)AnimationStates.Run);
         transform.position += Vector3.left * transform.localScale.x * _speed;
     }
 

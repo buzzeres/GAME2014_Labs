@@ -285,5 +285,5 @@ MonoBehaviour:
   _frontGroundPoint: {fileID: 1555220217833255269}
   _layerMask:
     serializedVersion: 2
-    m_Bits: 136
+    m_Bits: 128
   _frontObstaclePoint: {fileID: 8225306993333174745}

@@ -43,6 +43,12 @@ public class PlayerDetection : MonoBehaviour
         }
     }
 
+    public bool GetLOSStatus()
+    {
+        return _LOS;
+    }
+
+
     private void OnDrawGizmos()
     {
         if (_player == null)
