@@ -7,5 +7,5 @@ public enum AnimationStates
     Idle,
     Run,
     Jump,
-    Fall
+    Fall,
 }

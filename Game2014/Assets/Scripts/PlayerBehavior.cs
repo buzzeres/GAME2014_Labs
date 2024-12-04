@@ -6,46 +6,48 @@ public class PlayerBehavior : MonoBehaviour
 {
     [SerializeField]
     private float _horizontalForce;
-    private Rigidbody2D _rigidbody;
     [SerializeField]
     private float _verticalForce;
-    private bool _isGrounded;
     [SerializeField]
     private Transform _groundPoint;
     [SerializeField]
     private float _groundRadius;
     [SerializeField]
     private LayerMask _groundLayerMask;
-
-    private Animator _animator; // Changed from Animation to Animator
-
     [SerializeField]
     [Range(0.0f, 10.0f)]
     private float _airFactor;
-
-    private Joystick _leftJoystick;
     [SerializeField]
     [Range(0.0f, 1.0f)]
     private float _leftJoystickVerticalThreshold;
-
     [SerializeField]
     private float _horizontalSpeedLimit = 5.0f;
-
     [SerializeField]
-    float _deathlyFallSpeed = 5;
+    private float _deathlyFallSpeed = 5;
+
+    Rigidbody2D _rigidbody;
+    bool _isGrounded;
+    Animator _animator;
+    Joystick _leftJoystick;
+    HealthBarController _healthBar;
 
     // Start is called before the first frame update
     void Start()
     {
         _rigidbody = GetComponent<Rigidbody2D>();
-        _animator = GetComponent<Animator>(); // Changed from Animation to Animator
+        _animator = GetComponent<Animator>();
+        _healthBar = FindObjectOfType<HealthBarController>();
+
+        if (_healthBar == null)
+        {
+            Debug.LogError("HealthBarController component not found in the scene");
+        }
 
         if (GameObject.Find("OnScreenControllers"))
         {
             _leftJoystick = GameObject.Find("LeftJoystick").GetComponent<Joystick>();
         }
 
-        // Check if _groundPoint is assigned
         if (_groundPoint == null)
         {
             Debug.LogError("Ground Point is not assigned in the Inspector");
@@ -56,15 +58,15 @@ public class PlayerBehavior : MonoBehaviour
     {
         if (_isGrounded)
         {
-            if (Mathf.Abs(_rigidbody.velocity.x) > 0.2f)
+            if (Mathf.Abs(_rigidbody.velocity.x) > 0.1f)
             {
                 _animator.SetInteger("State", (int)AnimationStates.Run);
-                Debug.Log("State: Run");
+                // Debug.Log("State: Run");
             }
             else
             {
                 _animator.SetInteger("State", (int)AnimationStates.Idle);
-                Debug.Log("State: Idle");
+                // Debug.Log("State: Idle");
             }
         }
         else
@@ -72,22 +74,19 @@ public class PlayerBehavior : MonoBehaviour
             if (Mathf.Abs(_rigidbody.velocity.y) > _deathlyFallSpeed)
             {
                 _animator.SetInteger("State", (int)AnimationStates.Fall);
-                Debug.Log("State: Fall");
+                // Debug.Log("State: Fall");
             }
             else
             {
                 _animator.SetInteger("State", (int)AnimationStates.Jump);
-                Debug.Log("State: Jump");
+                // Debug.Log("State: Jump");
             }
         }
     }
 
-
-
     // Update is called once per frame
     void FixedUpdate()
     {
-        // Check if _groundPoint is assigned before using it
         if (_groundPoint != null)
         {
             _isGrounded = Physics2D.OverlapCircle(_groundPoint.position, _groundRadius, _groundLayerMask);
@@ -104,7 +103,7 @@ public class PlayerBehavior : MonoBehaviour
         if (_leftJoystick != null)
         {
             xInput = _leftJoystick.Horizontal;
-            Debug.Log(_leftJoystick.Horizontal + " " + _leftJoystick.Vertical);
+            // Debug.Log(_leftJoystick.Horizontal + " " + _leftJoystick.Vertical);
         }
 
         if (xInput != 0.0f)
@@ -137,6 +136,25 @@ public class PlayerBehavior : MonoBehaviour
         if (_isGrounded && jumpPressed > _leftJoystickVerticalThreshold)
         {
             _rigidbody.AddForce(Vector2.up * _verticalForce, ForceMode2D.Impulse);
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Enemy"))
+        {
+            IDamage damageDealer = collision.GetComponent<IDamage>();
+            if (damageDealer != null)
+            {
+                if (_healthBar != null)
+                {
+                    _healthBar.TakeDamage(damageDealer.Damage());
+                }
+                else
+                {
+                    Debug.LogError("HealthBarController is not assigned");
+                }
+            }
         }
     }
 
