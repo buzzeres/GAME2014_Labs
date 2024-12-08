@@ -1,3 +1,4 @@
+using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -24,12 +25,22 @@ public class PlayerBehavior : MonoBehaviour
     private float _horizontalSpeedLimit = 5.0f;
     [SerializeField]
     private float _deathlyFallSpeed = 5;
+    [SerializeField]
+    float _camerashakeIntensity = 2;
+    [SerializeField]
+    float _shakingDuration;
+    float _shakeTime;
 
     Rigidbody2D _rigidbody;
     bool _isGrounded;
     Animator _animator;
     Joystick _leftJoystick;
     HealthBarController _healthBar;
+    [SerializeField]
+    CinemachineVirtualCamera _camera;
+    CinemachineBasicMultiChannelPerlin _perin;
+    bool _iscameraShaking;  
+
 
     // Start is called before the first frame update
     void Start()
@@ -37,6 +48,8 @@ public class PlayerBehavior : MonoBehaviour
         _rigidbody = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
         _healthBar = FindObjectOfType<HealthBarController>();
+        _perin = _camera.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
+        _shakeTime = _shakingDuration;
 
         if (_healthBar == null)
         {
@@ -94,6 +107,17 @@ public class PlayerBehavior : MonoBehaviour
         Move();
         Jump();
         AnimatorStateControl();
+
+        if (_iscameraShaking)
+        {
+            _shakeTime -= Time.deltaTime;
+            if (_shakeTime <= 0)
+            {
+                _perin.m_AmplitudeGain = 0;
+                _iscameraShaking = false;
+                _shakeTime = _shakingDuration;
+            }
+        }
     }
 
     void Move()
@@ -139,8 +163,15 @@ public class PlayerBehavior : MonoBehaviour
         }
     }
 
+    void StartCamraShaing()
+    {
+        _iscameraShaking = true;
+        _perin.m_AmplitudeGain = _camerashakeIntensity;
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        StartCamraShaing();
         if (collision.CompareTag("Enemy"))
         {
             IDamage damageDealer = collision.GetComponent<IDamage>();
@@ -149,6 +180,7 @@ public class PlayerBehavior : MonoBehaviour
                 if (_healthBar != null)
                 {
                     _healthBar.TakeDamage(damageDealer.Damage());
+                   
                 }
                 else
                 {
