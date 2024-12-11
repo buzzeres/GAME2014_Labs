@@ -31,6 +31,8 @@ public class PlayerBehavior : MonoBehaviour
     float _shakingDuration;
     float _shakeTime;
 
+    ParticleSystem _dustTrail;
+
     Rigidbody2D _rigidbody;
     bool _isGrounded;
     Animator _animator;
@@ -50,6 +52,7 @@ public class PlayerBehavior : MonoBehaviour
         _healthBar = FindObjectOfType<HealthBarController>();
         _perin = _camera.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
         _shakeTime = _shakingDuration;
+        _dustTrail = GetComponentInChildren<ParticleSystem>();
 
         if (_healthBar == null)
         {
@@ -136,6 +139,10 @@ public class PlayerBehavior : MonoBehaviour
             if (!_isGrounded)
             {
                 force = new Vector2(force.x * _airFactor, force.y);
+            }
+            else
+            {
+                _dustTrail.Play();
             }
 
             _rigidbody.AddForce(force);
